@@ -11,6 +11,24 @@ class MyTheme {
       return const Color.fromARGB(255, 241, 148, 58);
     }
   }
+  static BoxDecoration customDecoration(context){
+    return const BoxDecoration(
+        color: Color.fromARGB(255, 48, 48, 48),
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+            bottomLeft: Radius.circular(10),
+            bottomRight: Radius.circular(10)),
+        boxShadow: [
+          BoxShadow(
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(
+                0, 1), // changes position of shadow
+          ),
+        ]
+    );
+}
   static Color backgroundColor(context){
     if (MediaQuery
         .of(context)
@@ -43,6 +61,7 @@ class MyTheme {
         brightness: Brightness.light,
         textTheme: GoogleFonts.kanitTextTheme(),
         hintColor: Colors.white,
+
         elevatedButtonTheme: ElevatedButtonThemeData(
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.resolveWith<Color>(
@@ -53,6 +72,7 @@ class MyTheme {
               }),
             )
         ),
+
         inputDecorationTheme: const InputDecorationTheme(
             labelStyle: TextStyle(color: Colors.black),
             hintStyle: TextStyle(color: Colors.black),

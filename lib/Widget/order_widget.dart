@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:c_delivery/theme_data.dart';
 import 'package:flutter/material.dart';
 
-import 'order_class.dart';
+import '../Classes/order_class.dart';
 
 class OrderWidget extends StatefulWidget {
-  MyOrder order;
-  OrderWidget({required this.order, Key? key}) : super(key: key);
+  final MyOrder order;
+  const OrderWidget({required this.order, Key? key}) : super(key: key);
 
   @override
   State<OrderWidget> createState() => _OrderWidgetState();
@@ -80,7 +80,7 @@ class _OrderWidgetState extends State<OrderWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         child: Container(
               margin: const EdgeInsets.fromLTRB(0, 1, 0, 0),
               padding: const EdgeInsets.fromLTRB(10, 5, 5, 5),

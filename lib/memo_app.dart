@@ -1,5 +1,5 @@
 import 'package:c_delivery/theme_data.dart';
-import 'package:c_delivery/user.dart';
+import 'package:c_delivery/Classes/user_class.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 

@@ -1,25 +1,24 @@
-import 'package:c_delivery/product.dart';
 import 'package:c_delivery/theme_data.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'order_class.dart';
+import 'edit_order_widget.dart';
+import '../Classes/order_class.dart';
 
 class OrderDetails extends StatefulWidget {
-  bool editingMode = false;
+  bool editingMode=false;
   MyOrder currentOrder;
   List<MyOrder> orderList;
   final Function(List<MyOrder>) updateOrderList;
-
+  final Function(bool value) showProducts;
   Future<void> deleteDocument(String collectionName, String documentId) async {
     try {
       await FirebaseFirestore.instance
           .collection(collectionName)
           .doc(documentId)
           .delete();
-      print('Documentul a fost șters cu succes!');
     } catch (e) {
-      print('A apărut o eroare la ștergerea documentului: $e');
+      Text('A apărut o eroare la ștergerea documentului: $e');
     }
   }
 
@@ -27,6 +26,8 @@ class OrderDetails extends StatefulWidget {
       {required this.currentOrder,
       required this.orderList,
       required this.updateOrderList,
+        required this.showProducts,
+        required this.editingMode,
       Key? key})
       : super(key: key);
 
@@ -38,15 +39,10 @@ class _OrderDetailsState extends State<OrderDetails> {
   List<String> status = ['In procesare', 'Pregatit de livrare', 'Anulata'];
   String errorMessage = '';
 
-  void updateEditingMode() {
+  void updateEditingMode(bool value) {
     setState(() {
-      widget.editingMode = !widget.editingMode;
-    });
-  }
+      widget.editingMode=value;
 
-  void updateCurrentOrder(MyOrder updatedOrder) {
-    setState(() {
-      widget.currentOrder = updatedOrder;
     });
   }
 
@@ -123,10 +119,23 @@ class _OrderDetailsState extends State<OrderDetails> {
                   //Order ProductList
                   for (int index = 0;
                       index < widget.currentOrder.productList.prod.length;
-                      index++)
-                    ProductWidget(
-                        currentProduct:
-                            widget.currentOrder.productList.prod[index]),
+                      index++)...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('${widget.currentOrder.productList.prod[index].name} x${widget.currentOrder.productList.prod[index].qty}',
+                                style: TextStyle(
+                                  color: MyTheme.textColor(context),
+                                  fontSize: 15,
+                                )),
+                            Text('${widget.currentOrder.productList.prod[index].price} Lei',
+                                style: TextStyle(
+                                  color: MyTheme.textColor(context),
+                                  fontSize: 15,
+                                )),
+                          ],
+                        )
+                  ]
                 ]), //Order ProductList
                 Row(
                   //Subtotal Row
@@ -229,91 +238,89 @@ class _OrderDetailsState extends State<OrderDetails> {
                     color: MyTheme.buttonColor(context),
                     child: TextButton(
                         //Buton Finalizare comanda
-                        onPressed: () {
-                          setState(() async {
-                            if (widget.currentOrder.status ==
-                                'Pregatit de livrare') {
-                              widget.orderList.remove(widget.currentOrder);
-                              widget.updateOrderList(widget.orderList);
-                              FutureBuilder(
-                                future: widget.currentOrder
-                                    .uploadOrder('readytodeliveryColinaOrders'),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  } else {
-                                    if (snapshot.hasError) {
-                                      return Text(
-                                          'A apărut o eroare: ${snapshot.error}');
-                                    }
-                                    return const Text('');
+                        onPressed: () async {
+                          if (widget.currentOrder.status ==
+                              'Pregatit de livrare') {
+                            widget.orderList.remove(widget.currentOrder);
+                            widget.updateOrderList(widget.orderList);
+                            FutureBuilder(
+                              future: widget.currentOrder
+                                  .uploadOrder('readytodeliveryColinaOrders'),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else {
+                                  if (snapshot.hasError) {
+                                    return Text(
+                                        'A apărut o eroare: ${snapshot.error}');
                                   }
-                                },
-                              );
-                              FutureBuilder(
-                                future: widget.deleteDocument(
-                                    'orders', widget.currentOrder.id),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  } else {
-                                    if (snapshot.hasError) {
-                                      return Text(
-                                          'A apărut o eroare: ${snapshot.error}');
-                                    }
-                                    return const Text('');
+                                  return const Text('');
+                                }
+                              },
+                            );
+                            FutureBuilder(
+                              future: widget.deleteDocument(
+                                  'orders', widget.currentOrder.id),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else {
+                                  if (snapshot.hasError) {
+                                    return Text(
+                                        'A apărut o eroare: ${snapshot.error}');
                                   }
-                                },
-                              );
-                              widget.currentOrder.id = '';
-                            } else if (widget.currentOrder.status ==
-                                'In procesare') {
-                              setState(() {
-                                errorMessage =
-                                    'Pentru a finaliza comanda trebuie sa schimbi statusul!';
-                              });
-                            } else {
-                              FutureBuilder(
-                                future: widget.currentOrder
-                                    .uploadOrder('cancelledColinaOrders'),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  } else {
-                                    if (snapshot.hasError) {
-                                      return Text(
-                                          'A apărut o eroare: ${snapshot.error}');
-                                    }
-                                    return const Text('');
+                                  return const Text('');
+                                }
+                              },
+                            );
+                            widget.currentOrder.id = '';
+                          } else if (widget.currentOrder.status ==
+                              'In procesare') {
+                            setState(() {
+                              errorMessage =
+                              'Pentru a finaliza comanda trebuie sa schimbi statusul!';
+                            });
+                          } else {
+                            FutureBuilder(
+                              future: widget.currentOrder
+                                  .uploadOrder('cancelledColinaOrders'),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else {
+                                  if (snapshot.hasError) {
+                                    return Text(
+                                        'A apărut o eroare: ${snapshot.error}');
                                   }
-                                },
-                              );
-                              FutureBuilder(
-                                future: widget.deleteDocument(
-                                    'orders', widget.currentOrder.id),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  } else {
-                                    if (snapshot.hasError) {
-                                      return Text(
-                                          'A apărut o eroare: ${snapshot.error}');
-                                    }
-                                    return const Text('');
+                                  return const Text('');
+                                }
+                              },
+                            );
+                            FutureBuilder(
+                              future: widget.deleteDocument(
+                                  'orders', widget.currentOrder.id),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else {
+                                  if (snapshot.hasError) {
+                                    return Text(
+                                        'A apărut o eroare: ${snapshot.error}');
                                   }
-                                },
-                              );
-                              widget.orderList.remove(widget.currentOrder);
-                              widget.updateOrderList(widget.orderList);
-                              widget.currentOrder.id = '';
-                              setState(() {
+                                  return const Text('');
+                                }
+                              },
+                            );
+                            widget.orderList.remove(widget.currentOrder);
+                            widget.updateOrderList(widget.orderList);
+                            widget.currentOrder.id = '';
+                          }
+                          setState((){
 
-                              });
-                            }
                           });
                         },
                         child: Text(
@@ -327,11 +334,9 @@ class _OrderDetailsState extends State<OrderDetails> {
                   style: const TextStyle(color: Colors.red, fontSize: 15),
                 )
               ] else ...[
-                EditProductList(
-                  updateCurrentOrder: updateCurrentOrder,
+                EditOrderWidget(
                   currentOrder: widget.currentOrder,
-                  editingMode: widget.editingMode,
-                  updateEdittingStatus: updateEditingMode,
+                  updateEdittingStatus: updateEditingMode, showProducts: widget.showProducts,
                 ),
               ]
             ]

@@ -2,8 +2,8 @@ import 'dart:js_util';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'adress_class.dart';
-import 'product.dart';
-import 'user.dart';
+import 'product_list_class.dart';
+import 'user_class.dart';
 
 class MyOrder extends ChangeNotifier{
   String id = '';
